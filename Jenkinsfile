@@ -1,36 +1,79 @@
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'COMPANY_NAME',
+            defaultValue: 'apple',
+            description: 'Company to analyze'
+        )
+
+        string(
+            name: 'MAX_ITERATIONS',
+            defaultValue: '3',
+            description: 'Max Agent loop iterations'
+        )
+    }
+
+    environment {
+        PYTHON = "python"
+    }
+
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout Repository') {
             steps {
-                git 'https://github.com/YOUR_USERNAME/company-intelligence-agent.git'
+                echo "Cloning repository..."
+                git 'https://github.com/KhushiY215/Innovex.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat 'pip install -r requirements.txt'
+                echo "Installing Python dependencies..."
+                bat "%PYTHON% -m pip install --upgrade pip"
+                bat "%PYTHON% -m pip install -r requirements.txt"
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Validation Tests') {
             steps {
-                bat 'pytest tests'
+                echo "Running pytest validation..."
+                bat "%PYTHON% -m pytest tests"
             }
         }
 
         stage('Run Agent Pipeline') {
             steps {
-                bat 'python main.py "wipro"'
+                echo "Running LangGraph company pipeline..."
+
+                bat """
+                %PYTHON% main.py "%COMPANY_NAME%" --max-iterations %MAX_ITERATIONS%
+                """
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t company-agent .'
+                echo "Building Docker image..."
+                bat "docker build -t company-intelligence-agent ."
             }
+        }
+
+    }
+
+    post {
+
+        success {
+            echo "Pipeline completed successfully"
+        }
+
+        failure {
+            echo "Pipeline failed"
+        }
+
+        always {
+            echo "Pipeline finished"
         }
 
     }
