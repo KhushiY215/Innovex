@@ -7,8 +7,30 @@ pipeline {
     }
 
     environment {
+
         PYTHON = "C:\\Users\\Khushi Yadav\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
-    }
+
+        NVIDIA_API_KEY = credentials('nvidia-key')
+        GROQ_API_KEY = credentials('groq-key')
+        CEREBRAS_API_KEY = credentials('cerebras-key')
+        HF_TOKEN = credentials('hf-key')
+        LANGCHAIN_API_KEY = credentials('langsmith-key')
+        SUPABASE_KEY = credentials('supabase-key')
+
+        LANGCHAIN_TRACING_V2 = "true"
+        LANGCHAIN_PROJECT = "company-intelligence-agent"
+
+        HF_MODEL_ID = "meta-llama/Llama-3.2-3B-Instruct"
+        NVIDIA_MODEL = "meta/llama-4-maverick-17b-128e-instruct"
+        CEREBRAS_MODEL = "llama3.1-8b"
+        GROQ_MODEL = "llama-3.3-70b-versatile"
+        GROQ_JUDGE_MODEL = "qwen/qwen3-32b"
+
+        OUTPUT_DIR = "outputs"
+        LOG_LEVEL = "INFO"
+
+        SUPABASE_URL = "https://ymgwsnkbbxfmogxhoxgm.supabase.co"
+        }
 
     stages {
 
