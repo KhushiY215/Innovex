@@ -10,6 +10,9 @@ pipeline {
 
         PYTHON = "C:\\Users\\Khushi Yadav\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
 
+        PYTHONUTF8 = "1"
+        PYTHONIOENCODING = "utf-8"
+
         NVIDIA_API_KEY = credentials('nvidia-key')
         GROQ_API_KEY = credentials('groq-key')
         CEREBRAS_API_KEY = credentials('cerebras-key')
@@ -30,7 +33,7 @@ pipeline {
         LOG_LEVEL = "INFO"
 
         SUPABASE_URL = "https://ymgwsnkbbxfmogxhoxgm.supabase.co"
-        }
+    }
 
     stages {
 
