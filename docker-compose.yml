@@ -1,0 +1,20 @@
+
+
+services:
+
+  company-agent:
+
+    build: .
+
+    container_name: company-intelligence-agent
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - ./outputs:/app/outputs
+
+    restart: always

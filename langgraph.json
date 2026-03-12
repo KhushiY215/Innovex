@@ -1,0 +1,6 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "company-agent": "./graph/workflow.py:build_workflow"
+  }
+}
