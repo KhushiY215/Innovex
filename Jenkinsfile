@@ -21,13 +21,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Repository') {
-            steps {
-                echo "Cloning repository..."
-                git 'https://github.com/KhushiY215/Innovex.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 echo "Installing Python dependencies..."
@@ -46,10 +39,7 @@ pipeline {
         stage('Run Agent Pipeline') {
             steps {
                 echo "Running LangGraph company pipeline..."
-
-                bat """
-                %PYTHON% main.py "%COMPANY_NAME%" --max-iterations %MAX_ITERATIONS%
-                """
+                bat "%PYTHON% main.py \"%COMPANY_NAME%\" --max-iterations %MAX_ITERATIONS%"
             }
         }
 
