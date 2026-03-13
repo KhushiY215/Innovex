@@ -74,7 +74,15 @@ def node_extract(state: AgentState) -> AgentState:
 
     logger.info("═══ ITERATION %d — Agent 1 (Extract) ═══", iteration)
 
-    llm_results = run_agent1(company, feedback)
+    previous_data = state.get("consolidated", {})
+    failures = state.get("test_failures", [])
+
+    llm_results = run_agent1(
+        company_name=company,
+        feedback=feedback,
+        previous_data=previous_data,
+        failed_fields=failures
+    )
 
     llm1_d = _vr_to_dict(llm_results["llm1_hf"])
     llm2_d = _vr_to_dict(llm_results["llm2_nvidia"])
@@ -161,6 +169,12 @@ def node_consolidate(state: AgentState) -> AgentState:
 
     vr = run_agent2(company, llm_vr_map)
 
+    previous_data = state.get("consolidated", {})
+
+    if previous_data and vr.data:
+        merged = {**previous_data, **vr.data}
+        vr.data = merged
+
     # ── NEW: store consolidated result ──
     try:
         store_consolidated_output(
@@ -231,6 +245,10 @@ def node_test(state: AgentState) -> AgentState:
         "test_passed": passed,
         "test_failures": failures,
         "feedback": feedback,
+        "repair_context": {
+            "failed_fields": failures,
+            "previous_data": state.get("consolidated", {})
+        },
         "agent3_output_path": str(out_path),
     }
 
@@ -304,6 +322,9 @@ def run_pipeline(
         "iteration": 0,
         "max_iterations": max_iterations or settings.max_iterations,
         "feedback": "",
+        "consolidated": {},
+        "test_failures": [],
+        "repair_context": {},
         "done": False,
         "output_path": None,
     }
