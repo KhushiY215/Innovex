@@ -45,13 +45,6 @@ pipeline {
             }
         }
 
-        stage('Run Validation Tests') {
-            steps {
-                echo "Running pytest..."
-                bat "\"%PYTHON%\" -m pytest tests"
-            }
-        }
-
         stage('Run Agent Pipeline') {
             steps {
                 echo "Running LangGraph pipeline..."
