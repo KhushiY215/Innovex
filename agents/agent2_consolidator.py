@@ -50,211 +50,59 @@ def _normalize_fields(data: dict) -> dict:
     if not isinstance(data, dict):
         return data
 
-    # ------------------------------------------------
-    # ENUM normalization (case + invalid values)
-    # ------------------------------------------------
-    enum_fields = {
-        "ai_ml_adoption_level": {"none","basic","intermediate","advanced","cutting_edge"},
-        "profitability_status": {"profitable","break_even","pre_revenue","loss_making"},
-        "cybersecurity_posture": {"weak","moderate","strong","advanced"},
-        "burnout_risk": {"low","medium","high","very_high"},
-        "flexibility_level": {"none","low","medium","high","fully_remote"},
-        "website_quality": {"poor","average","good","excellent"},
-        "regulatory_status": {"compliant","partially_compliant","non_compliant","under_review"},
-        "area_safety": {"unsafe","moderate","safe","very_safe"},
-        "hiring_velocity": {"low","medium","high","very_high"},
-        "employee_turnover": {"low","moderate","high","critical"},
-        "sales_motion": {"inbound","outbound","product_led","channel","hybrid"}
-    }
-
-    for field, allowed in enum_fields.items():
-
-        if field not in data:
-            continue
-
-        v = data[field]
-
-        if isinstance(v, str):
-
-            v = v.lower().strip()
-
-            if v not in allowed:
-                # attempt simple synonym fixes
-                mapping = {
-                    "strong":"high",
-                    "very strong":"very_high",
-                    "average":"medium",
-                    "weak":"low",
-                    "profitable":"profitable",
-                    "compliant":"compliant"
-                }
-
-                if v in mapping:
-                    v = mapping[v]
-
-            data[field] = v
-
-
-    # ------------------------------------------------
-    # employee_size normalization
-    # ------------------------------------------------
-    if "employee_size" in data:
-
-        v = data["employee_size"]
-
-        if isinstance(v, str) and "-" in v:
-
-            try:
-                upper = int(v.split("-")[1])
-
-                if upper >= 10000:
-                    data["employee_size"] = "10000+"
-
-            except:
-                pass
-
-
-    # ------------------------------------------------
-    # diversity score must be 0–10
-    # ------------------------------------------------
+    # ------------------------------------------
+    # diversity_inclusion_score must be 0–10
+    # ------------------------------------------
     if "diversity_inclusion_score" in data:
+        score = data.get("diversity_inclusion_score")
 
         try:
-            score = float(data["diversity_inclusion_score"])
+            score = float(score)
 
             if score > 10:
-                score = score / 10
+                data["diversity_inclusion_score"] = score / 10
 
-            data["diversity_inclusion_score"] = score
-
-        except:
+        except Exception:
             pass
 
 
-    # ------------------------------------------------
-    # ESG normalization
-    # ------------------------------------------------
-    if isinstance(data.get("esg_ratings"), dict):
+    # ------------------------------------------
+    # ESG rating normalization
+    # ------------------------------------------
+    if "esg_ratings" in data and isinstance(data["esg_ratings"], dict):
 
         mapping = {
-            "strong":"high",
-            "very strong":"exemplary",
-            "average":"medium",
-            "weak":"low"
+            "strong": "high",
+            "very strong": "exemplary",
+            "average": "medium",
+            "weak": "low"
         }
 
-        for k,v in data["esg_ratings"].items():
+        for key, val in data["esg_ratings"].items():
 
-            if isinstance(v,str):
+            if isinstance(val, str):
+                val_lower = val.lower()
 
-                v = v.lower()
-
-                if v in mapping:
-                    data["esg_ratings"][k] = mapping[v]
+                if val_lower in mapping:
+                    data["esg_ratings"][key] = mapping[val_lower]
 
 
-    # ------------------------------------------------
-    # CAC/LTV correction
-    # ------------------------------------------------
+    # ------------------------------------------
+    # CAC/LTV ratio correction
+    # ------------------------------------------
     cac = data.get("customer_acquisition_cost")
     ltv = data.get("customer_lifetime_value")
 
     try:
         if cac and ltv and float(cac) > 0:
-            data["cac_ltv_ratio"] = float(ltv)/float(cac)
-    except:
+            data["cac_ltv_ratio"] = float(ltv) / float(cac)
+    except Exception:
         pass
 
 
-    # ------------------------------------------------
-    # history_timeline shape fix
-    # ------------------------------------------------
-    if isinstance(data.get("history_timeline"), list):
-
-        fixed = []
-
-        for item in data["history_timeline"]:
-
-            if isinstance(item,str) and ":" in item:
-
-                year,event = item.split(":",1)
-
-                try:
-                    fixed.append({
-                        "year": int(year.strip()),
-                        "event": event.strip()
-                    })
-                except:
-                    pass
-
-            else:
-                fixed.append(item)
-
-        data["history_timeline"] = fixed
-
-
-    # ------------------------------------------------
-    # revenue_mix list → dict
-    # ------------------------------------------------
-    if isinstance(data.get("revenue_mix"), list):
-
-        items = data["revenue_mix"]
-
-        if len(items)>0:
-
-            pct = round(100/len(items),2)
-
-            data["revenue_mix"] = {str(x).lower(): pct for x in items}
-
-
-    # ------------------------------------------------
-    # social_media_followers int → dict
-    # ------------------------------------------------
-    if isinstance(data.get("social_media_followers"), int):
-
-        v = data["social_media_followers"]
-
-        data["social_media_followers"] = {
-            "linkedin": v,
-            "twitter": 0,
-            "facebook": 0,
-            "instagram": 0,
-            "youtube": 0
-        }
-
-
-    # ------------------------------------------------
-    # string → object conversions
-    # ------------------------------------------------
-    object_fields = {
-        "board_members":"name",
-        "key_leaders":"name",
-        "case_studies":"title"
-    }
-
-    for field,key in object_fields.items():
-
-        if field not in data:
-            continue
-
-        v = data[field]
-
-        if isinstance(v,list):
-
-            fixed=[]
-
-            for item in v:
-
-                if isinstance(item,str):
-                    fixed.append({key:item})
-
-                else:
-                    fixed.append(item)
-
-            data[field]=fixed
-
-
     return data
+
+
 # ------------------------------------------------
 # Best-effort JSON from agent1
 # ------------------------------------------------
