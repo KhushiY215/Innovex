@@ -109,24 +109,42 @@ global_exposure, mission_clarity, sustainability_csr, crisis_behavior
 """
 
 
-def build_extraction_user_prompt(company_name: str, feedback: str = "") -> str:
+def build_extraction_user_prompt(
+    company_name: str,
+    feedback: str = "",
+    previous_data: dict | None = None,
+    failed_fields: list | None = None,
+) -> str:
     """
     Build the user-turn prompt for Agent 1.
-
-    Parameters
-    ----------
-    company_name : name of the company to research
-    feedback     : correction instructions from Agent 3 (empty on first run)
+    Supports self-healing retry loop.
     """
+
+    previous_data = previous_data or {}
+    failed_fields = failed_fields or []
+
     base = f'Research the company "{company_name}" and return a complete JSON object for all 163 fields.'
 
+    repair_section = ""
+
+    # If this is a retry iteration
+    if previous_data and failed_fields:
+        repair_section = (
+            "\n\n## PREVIOUS EXTRACTION RESULT\n"
+            f"{previous_data}\n\n"
+            "## FIELDS THAT FAILED VALIDATION\n"
+            f"{failed_fields}\n\n"
+            "Fix ONLY these failing fields.\n"
+            "Keep all other fields unchanged.\n"
+        )
+
+    feedback_section = ""
+
     if feedback.strip():
-        correction = (
+        feedback_section = (
             "\n\n## CORRECTION INSTRUCTIONS FROM PREVIOUS ITERATION\n"
-            "The following fields FAILED validation tests. You MUST fix them:\n"
-            f"{feedback}\n\n"
+            f"{feedback}\n"
             "Address every correction point above before returning the JSON."
         )
-        return base + correction
-
+        return base + repair_section + feedback_section
     return base
