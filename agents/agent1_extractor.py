@@ -58,6 +58,8 @@ def _call_and_validate(
     caller,
     company_name: str,
     feedback: str,
+    previous_data: dict,
+    failed_fields: list,
 ) -> Dict:
     """
     Call one LLM, parse JSON, run Pydantic validation.
@@ -68,7 +70,12 @@ def _call_and_validate(
         result   : ValidationResult
         hard_fail: bool — True only when the LLM call itself failed (no data at all)
     """
-    user_prompt = build_extraction_user_prompt(company_name, feedback)
+    user_prompt = build_extraction_user_prompt(
+    company_name=company_name,
+    feedback=feedback,
+    previous_data=previous_data,
+    failed_fields=failed_fields
+)
     logger.info("[Agent1] Calling %s …", llm_name)
 
     # ── Step 1: LLM call ─────────────────────────────────────────────────
@@ -125,7 +132,11 @@ def _call_and_validate(
 def run_agent1(
     company_name: str,
     feedback: str = "",
+    previous_data: dict | None = None,
+    failed_fields: list | None = None,
 ) -> Dict[str, ValidationResult]:
+
+    
     """
     Run Agent 1 — query all 3 LLMs concurrently, validate each output.
 
@@ -147,6 +158,9 @@ def run_agent1(
       "llm3_cerebras": ValidationResult,
     }
     """
+    previous_data = previous_data or {}
+    failed_fields = failed_fields or []
+    
     tasks = [
         ("llm1_hf",       call_huggingface),
         ("llm2_nvidia",   call_nvidia),
@@ -158,7 +172,7 @@ def run_agent1(
 
     with ThreadPoolExecutor(max_workers=3) as pool:
         futures = {
-            pool.submit(_call_and_validate, name, caller, company_name, feedback): name
+            pool.submit(_call_and_validate, name, caller, company_name, feedback, previous_data, failed_fields): name
             for name, caller in tasks
         }
         for future in as_completed(futures):
