@@ -41,7 +41,14 @@ pipeline {
             steps {
                 echo "Installing Python dependencies..."
                 bat "\"%PYTHON%\" -m pip install --upgrade pip"
-                bat "\"%PYTHON%\" -m pip install -r requirements.txt"
+                bat "\"%PYTHON%\" -m pip install --no-cache-dir -r requirements.txt"
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                echo "Running validation tests..."
+                bat "\"%PYTHON%\" -m pytest tests"
             }
         }
 
@@ -53,12 +60,14 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            when {
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
             steps {
                 echo "Building Docker image..."
                 bat "docker build -t company-agent ."
             }
         }
-
     }
 
     post {
