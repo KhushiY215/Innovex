@@ -12,19 +12,19 @@ Input: Company Name
         ▼
 ┌───────────────────────────────────────────────────────────┐
 │  AGENT 1 — Extractor                                      │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
-│  │ LLM-1        │  │ LLM-2        │  │ LLM-3        │    │
-│  │ HuggingFace  │  │ NVIDIA NIM   │  │ Cerebras     │    │
-│  │ Llama-3.2-3B │  │ Llama-4-Mav  │  │ Llama3.1-8B  │    │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │ LLM-1        │  │ LLM-2        │  │ LLM-3        │     │
+│  │ HuggingFace  │  │ NVIDIA NIM   │  │ Cerebras     │     │
+│  │ Llama-3.2-3B │  │ Llama-4-Mav  │  │ Llama3.1-8B  │     │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
 │         └─────────────────┼──────────────────┘            │
-│                    Pydantic Validation ×3                  │
+│                    Pydantic Validation ×3                 │
 └───────────────────────────┬───────────────────────────────┘
                             │ 3 validated JSONs
                             ▼
 ┌───────────────────────────────────────────────────────────┐
 │  AGENT 2 — Consolidation Judge                            │
-│  LLM-4: Groq (llama-3.3-70b-versatile)                   │
+│  LLM-4: Groq (llama-3.3-70b-versatile)                    │
 │  • Majority-vote per field                                │
 │  • Best-value selection                                   │
 │  • Cross-field consistency enforcement                    │
@@ -35,7 +35,7 @@ Input: Company Name
 ┌───────────────────────────────────────────────────────────┐
 │  AGENT 3 — Tester & Feedback Generator                    │
 │  pytest (35+ test cases) → failure report                 │
-│  LLM-5: Groq (qwen/qwen3-32b) → correction instructions  │
+│  LLM-5: Groq (qwen/qwen3-32b) → correction instructions   │
 └────────────┬──────────────────────────┬───────────────────┘
              │ FAIL: feedback           │ PASS
              ▼                          ▼
@@ -46,13 +46,13 @@ Input: Company Name
 
 ## LLMs Used
 
-| Role       | Provider    | Model                                  |
-|------------|-------------|----------------------------------------|
-| LLM-1      | HuggingFace | `meta-llama/Llama-3.2-3B-Instruct`    |
+| Role       | Provider    | Model                                     |
+|------------|-------------|-------------------------------------------|
+| LLM-1      | HuggingFace | `meta-llama/Llama-3.2-3B-Instruct`        |
 | LLM-2      | NVIDIA NIM  | `meta/llama-4-maverick-17b-128e-instruct` |
-| LLM-3      | Cerebras    | `llama3.1-8b`                          |
-| LLM-4 Judge| Groq        | `llama-3.3-70b-versatile`              |
-| LLM-5 Test | Groq        | `qwen/qwen3-32b`                       |
+| LLM-3      | Cerebras    | `llama3.1-8b`                             |
+| LLM-4 Judge| Groq        | `llama-3.3-70b-versatile`                 |
+| LLM-5 Test | Groq        | `qwen/qwen3-32b`                          |
 
 ---
 
@@ -140,7 +140,7 @@ Validation is centralised in `validation/validator.py` and reused at **all 3 sta
 | Stage   | When applied                    | What checked                          |
 |---------|---------------------------------|---------------------------------------|
 | Agent 1 | After each LLM response         | Schema, types, enums, cross-fields    |
-| Agent 2 | After consolidation             | Same — plus consistency re-check     |
+| Agent 2 | After consolidation             | Same — plus consistency re-check      |
 | Agent 3 | Before pytest + in pytest       | 35+ business-rule tests               |
 
 ---
